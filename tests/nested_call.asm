@@ -1,0 +1,11 @@
+CALL f1
+HALT
+
+f1:
+PUSH 10
+CALL f2
+RET
+
+f2:
+PUSH 20
+RET
