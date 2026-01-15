@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include "../include/opcode.h"
 
-static void push(VM *vm, int32_t value) {
+static void push(VM *vm, Value value) {
     if (vm->sp >= STACK_SIZE - 1) {
         printf("Stack overflow\n");
         vm->running = false;
@@ -12,11 +12,11 @@ static void push(VM *vm, int32_t value) {
     vm->stack[++vm->sp] = value;
 }
 
-static int32_t pop(VM *vm) {
+static Value pop(VM *vm) {
     if (vm->sp < 0) {
         printf("Stack underflow\n");
         vm->running = false;
-        return 0;
+        return (Value){ .type = VAL_INT, .int_val = 0 };
     }
     return vm->stack[vm->sp--];
 }
@@ -41,8 +41,12 @@ static int32_t read_int32(VM *vm) {
 static void dump_stack(VM *vm) {
     printf("Stack (bottom → top): ");
     for (int i = 0; i <= vm->sp; i++) {
-        printf("%d ", vm->stack[i]);
-    }
+        if (vm->stack[i].type == VAL_INT) {
+            printf("%d ", vm->stack[i].int_val);
+        } else {
+            printf("<obj %p> ", (void*)vm->stack[i].obj_val);
+        }
+    }   
     printf("\n");
 }
 
@@ -89,7 +93,10 @@ void execute(VM *vm) {
 
                 int32_t val = read_int32(vm);
 
-                push(vm, val);
+                Value v;
+                v.type = VAL_INT;
+                v.int_val = val;
+                push(vm, v);
                 break;
             }
 
@@ -108,42 +115,87 @@ void execute(VM *vm) {
             }
 
             case OP_ADD: {
-                int32_t b = pop(vm);
-                int32_t a = pop(vm);
-                push(vm, a + b);
+                Value b = pop(vm);
+                Value a = pop(vm);
+                if (a.type != VAL_INT || b.type != VAL_INT) {
+                    printf("ADD expects integers\n");
+                    vm->running = false;
+                    break;
+                }
+
+                Value result;
+                result.type = VAL_INT;
+                result.int_val = a.int_val + b.int_val;
+                push(vm, result);
                 break;
             }
 
             case OP_SUB: {
-                int32_t b = pop(vm);
-                int32_t a = pop(vm);
-                push(vm, a - b);
+                Value b = pop(vm);
+                Value a = pop(vm);
+                if (a.type != VAL_INT || b.type != VAL_INT) {
+                    printf("SUB expects integers\n");
+                    vm->running = false;
+                    break;
+                }
+
+                Value result;
+                result.type = VAL_INT;
+                result.int_val = a.int_val - b.int_val;
+                push(vm, result);
                 break;
             }
 
             case OP_MUL: {
-                int32_t b = pop(vm);
-                int32_t a = pop(vm);
-                push(vm, a * b);
+                Value b = pop(vm);
+                Value a = pop(vm);
+                if (a.type != VAL_INT || b.type != VAL_INT) {
+                    printf("MUL expects integers\n");
+                    vm->running = false;
+                    break;
+                }
+
+                Value result;
+                result.type = VAL_INT;
+                result.int_val = a.int_val * b.int_val;
+                push(vm, result);
                 break;
             }
 
             case OP_DIV: {
-                int32_t b = pop(vm);
-                int32_t a = pop(vm);
-                if (b == 0) {
+                Value b = pop(vm);
+                Value a = pop(vm);
+
+                if (a.type != VAL_INT || b.type != VAL_INT) {
+                    printf("DIV expects integers\n");
+                    vm->running = false;
+                    break;
+                }
+                if (b.int_val == 0) {
                     printf("Division by zero\n");
                     vm->running = false;
                     break;
                 }
-                push(vm, a / b);
+                Value result;
+                result.type = VAL_INT;
+                result.int_val = a.int_val / b.int_val;
+                push(vm, result);
                 break;
             }
 
             case OP_CMP: {
-                int32_t b = pop(vm);
-                int32_t a = pop(vm);
-                push(vm, (a < b) ? 1 : 0);
+                Value b = pop(vm);
+                Value a = pop(vm);
+                if (a.type != VAL_INT || b.type != VAL_INT) {
+                    printf("CMP expects integers\n");
+                    vm->running = false;
+                    break;
+                }
+
+                Value result;
+                result.type = VAL_INT;
+                result.int_val = ((a.int_val < b.int_val) ? 1 : 0);
+                push(vm, result);
                 break;
             }
 
@@ -163,10 +215,15 @@ void execute(VM *vm) {
 
             case OP_JZ: {
                 int32_t addr = read_int32(vm);
-                int32_t cond = pop(vm);
+                Value cond = pop(vm);
+                if (cond.type != VAL_INT) {
+                    printf("JZ expects integer condition\n");
+                    vm->running = false;
+                    break;
+                }
                 if (!vm->running) break;
 
-                if (cond == 0) {
+                if (cond.int_val == 0) {
                     if (addr < 0 || addr >= vm->bytecode_size) {
                         printf("Invalid JZ address: %d\n", addr);
                         vm->running = false;
@@ -179,10 +236,16 @@ void execute(VM *vm) {
 
             case OP_JNZ: {
                 int32_t addr = read_int32(vm);
-                int32_t cond = pop(vm);
+                Value cond = pop(vm);
+                Value cond = pop(vm);
+                if (cond.type != VAL_INT) {
+                    printf("JNZ expects integer condition\n");
+                    vm->running = false;
+                    break;
+                }
                 if (!vm->running) break;
 
-                if (cond != 0) {
+                if (cond.int_val != 0) {
                     if (addr < 0 || addr >= vm->bytecode_size) {
                         printf("Invalid JNZ address: %d\n", addr);
                         vm->running = false;
@@ -195,7 +258,7 @@ void execute(VM *vm) {
 
             case OP_STORE: {
                 int32_t idx = read_int32(vm);
-                int32_t val = pop(vm);
+                Value val = pop(vm);
                 if (!vm->running) break;
 
                 if (idx < 0 || idx >= MEM_SIZE) {
@@ -253,8 +316,8 @@ void execute(VM *vm) {
                    vm->running = false;
                    break;
                   }
-                 int32_t a = vm->stack[vm->sp];
-                 int32_t b = vm->stack[vm->sp - 1];
+                 Value a = vm->stack[vm->sp];
+                 Value b = vm->stack[vm->sp - 1];
                  vm->stack[vm->sp] = b;
                  vm->stack[vm->sp - 1] = a;
                  break;

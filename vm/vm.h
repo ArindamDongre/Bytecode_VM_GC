@@ -3,16 +3,30 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "object.h"
 
 #define STACK_SIZE 1024
 #define MEM_SIZE 1024
 #define RET_STACK_SIZE 1024
 
+typedef enum {
+    VAL_INT,
+    VAL_OBJ
+} ValueType;
+
 typedef struct {
-    int32_t stack[STACK_SIZE];
+    ValueType type;
+    union {
+        int32_t int_val;
+        Obj* obj_val;
+    };
+} Value;
+
+typedef struct {
+    Value stack[STACK_SIZE];
     int sp;
 
-    int32_t memory[MEM_SIZE];
+    Value memory[MEM_SIZE];
 
     int32_t ret_stack[RET_STACK_SIZE];
     int rsp;
