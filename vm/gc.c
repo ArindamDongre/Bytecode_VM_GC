@@ -20,7 +20,15 @@ void mark_roots(VM* vm) {
 static void mark_object(Obj* obj) {
     if (obj == NULL) return;
 
-    // Temporary stub: just mark the object
+    /* Already marked? Stop (prevents cycles) */
+    if (obj->marked) return;
+
+    /* Mark this object */
     obj->marked = true;
+
+    /* Recursively mark referenced objects */
+    mark_object(obj->left);
+    mark_object(obj->right);
 }
+
 
