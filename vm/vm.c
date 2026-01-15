@@ -9,6 +9,7 @@ void vm_init(VM *vm) {
     vm->running = true;
     vm->bytecode = NULL;
     vm->bytecode_size = 0;
+    vm->heap = NULL;
     memset(vm->memory, 0, sizeof(vm->memory));
 }
 

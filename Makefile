@@ -4,7 +4,7 @@ CFLAGS = -Wall -Wextra -g
 VM_BIN = vm_exec
 ASM_BIN = assembler_exec
 
-VM_SRC = vm/main.c vm/vm.c vm/loader.c vm/executor.c
+VM_SRC = vm/main.c vm/vm.c vm/loader.c vm/executor.c vm/heap.c vm/gc.c
 ASM_SRC = assembler/assembler.c
 
 all: $(VM_BIN) $(ASM_BIN)

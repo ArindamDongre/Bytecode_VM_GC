@@ -22,7 +22,7 @@ typedef struct {
     };
 } Value;
 
-typedef struct {
+typedef struct VM{
     Value stack[STACK_SIZE];
     int sp;
 
@@ -36,6 +36,8 @@ typedef struct {
 
     int pc;
     bool running;
+
+    Obj* heap;        // head of linked list of all heap objects
 } VM;
 
 /* VM lifecycle */
