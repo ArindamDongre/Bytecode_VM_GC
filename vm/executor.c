@@ -237,7 +237,6 @@ void execute(VM *vm) {
             case OP_JNZ: {
                 int32_t addr = read_int32(vm);
                 Value cond = pop(vm);
-                Value cond = pop(vm);
                 if (cond.type != VAL_INT) {
                     printf("JNZ expects integer condition\n");
                     vm->running = false;
