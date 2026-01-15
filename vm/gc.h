@@ -4,5 +4,7 @@
 #include "vm.h"
 
 void mark_roots(VM* vm);
+void gc(VM* vm);
+
 
 #endif

@@ -1,7 +1,16 @@
-#include "gc.h"
 #include <stdio.h>
+#include <stdlib.h> 
+#include "gc.h"
+
+static void sweep(VM* vm);
 
 static void mark_object(Obj* obj);
+
+void gc(VM* vm) {
+    mark_roots(vm);
+    sweep(vm);
+}
+
 
 /*
  * Mark all objects reachable from the VM stack.
@@ -30,5 +39,33 @@ static void mark_object(Obj* obj) {
     mark_object(obj->left);
     mark_object(obj->right);
 }
+
+static void sweep(VM* vm) {
+    Obj* curr = vm->heap;
+    Obj* prev = NULL;
+
+    while (curr != NULL) {
+        if (!curr->marked) {
+            /* Object is unreachable → free it */
+            Obj* dead = curr;
+            curr = curr->next;
+
+            if (prev == NULL) {
+                /* Removing head of heap list */
+                vm->heap = curr;
+            } else {
+                prev->next = curr;
+            }
+
+            free(dead);
+        } else {
+            /* Object survives → unmark for next GC */
+            curr->marked = false;
+            prev = curr;
+            curr = curr->next;
+        }
+    }
+}
+
 
 
