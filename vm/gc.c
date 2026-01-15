@@ -2,6 +2,9 @@
 #include <stdlib.h> 
 #include "gc.h"
 
+size_t total_allocated = 0;
+size_t total_freed = 0;
+
 static void sweep(VM* vm);
 
 static void mark_object(Obj* obj);
@@ -65,6 +68,16 @@ static void sweep(VM* vm) {
             curr = curr->next;
         }
     }
+}
+
+size_t heap_object_count(VM* vm) {
+    size_t count = 0;
+    Obj* curr = vm->heap;
+    while (curr) {
+        count++;
+        curr = curr->next;
+    }
+    return count;
 }
 
 

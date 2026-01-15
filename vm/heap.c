@@ -3,6 +3,8 @@
 #include "heap.h"
 #include "vm.h"
 
+extern size_t total_allocated; // defined in gc.c
+
 Obj* new_pair(VM* vm, Obj* left, Obj* right) {
     Obj* obj = malloc(sizeof(Obj));
     if (!obj) {
@@ -17,6 +19,8 @@ Obj* new_pair(VM* vm, Obj* left, Obj* right) {
     // insert into heap list
     obj->next = vm->heap;
     vm->heap = obj;
+
+    total_allocated++; 
 
     return obj;
 }
