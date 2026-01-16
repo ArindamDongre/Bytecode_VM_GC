@@ -8,8 +8,7 @@ int main() {
     VM vm;
     vm_init(&vm);
 
-    total_allocated = 0;
-    total_freed = 0;
+    reset_gc_counters();
 
     clock_t start = clock();
 
