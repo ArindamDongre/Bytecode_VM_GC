@@ -1,8 +1,8 @@
-# Lab 4 – Bytecode Virtual Machine
+# Lab 5 – Bytecode Virtual Machine with Mark-Sweep Garbage Collector
 
 ## Overview
 
-Stack-based bytecode virtual machine with integrated garbage collector.
+Stack-based bytecode virtual machine with integrated mark-sweep garbage collector.
 
 ## Directory Structure
 
@@ -30,21 +30,27 @@ make
 ```
 ./vm_exec arith.bin
 ```
+
 ## Running GC Tests
+
 ### Compile a GC test
+
 ```
 gcc -I. tests_gc/<test_file>.c vm/vm.c vm/heap.c vm/gc.c -o <test_binary>
 ```
 
 ### Run
+
 ```
 ./<test_binary>
 ```
 
-### Example 
+### Example
+
 ```
 gcc -I. tests_gc/gc_reachable_pair.c vm/vm.c vm/heap.c vm/gc.c -o test1
 ```
+
 ```
 ./test1
 
