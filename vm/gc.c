@@ -61,6 +61,7 @@ static void sweep(VM* vm) {
             }
 
             free(dead);
+            total_freed++;
         } else {
             /* Object survives → unmark for next GC */
             curr->marked = false;
